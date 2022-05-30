@@ -1,5 +1,6 @@
 # pip3 install openpyxl
 
+from ast import NotIn
 from operator import indexOf
 from openpyxl import Workbook, load_workbook
 
@@ -25,7 +26,7 @@ wb = Workbook()
 ws = wb.active
 ws.title = 'Statistics'
 ws.append(['NIA Patients MRN and Count', 'MesCoBraD Enrolled',
-          'CBTI Enrolled', 'MesCoBraD and CBTI Enrolled', 'NIA- Not in study'])
+          'CBTI Enrolled', 'MesCoBraD and CBTI Enrolled', 'NIA- Not in study', 'NPT', 'PSG', 'Actigraphy', '1YNPT', '1YPSG'])
 
 
 # dictionary for keeping track of whhat has been completed for each patient care/research pathway
@@ -34,9 +35,7 @@ enrolled = {'MesCoBraD Enrolled': {'MRN': []}, 'CBTI Enrolled': {
     'MRN': []}, 'MesCoBraD and CBTI Enrolled': {'MRN': []}, 'NIA_total': {'MRN': []}, 'NIA- Not in study': {'MRN': []}}
 
 
-# completed_appointments = {'MesCoBraD': {'MRN': 'NPT': '', 'PSG': [], 'Actigraphy': '', '1YNPT': ''}, 'CBTI': {
-#     'MRN': '', 'completed_questionnaires': {'consent': '', 'cbs': '', 'cCbs': '', 'q-ess-a': '', 'ess-a(3m)': '', 'ess-a(1y)': '', 'q-isi-a': '', 'isi-a(3m)': '', 'isi-a(1y)': '', 'q-psqi': '', 'psqi(3m)': '', 'psqi(1y)': '', 'qnpi-q': '', 'q-cdr': ''}, 'arm': ''}}, 'MesCoBraD and CBTI Enrolled': {'MRN': []}, 'NIA_total': {'MRN': {}}, 'NIA- Not in study': {'MRN': {}}}
-
+completed_appointments = {'MesCoBraD': [], 'CBTI': [], 'non-research': []}
 
 mescobrad_mrn_list = enrolled['MesCoBraD Enrolled'].keys()
 cbti_mrn_list = enrolled['CBTI Enrolled'].keys()
@@ -155,8 +154,36 @@ def nia_not_in_study():
     return
 
 
-def completed_appointments():
+def completed_appointments_mescobrad():
+    '''required_appointments':'NPT', 'PSG', 'Actigraphy', '1YNPT'; all others listed under additional'''
+
+    current_mrn = 0
+    count = 0
+    for mrn in ws_ss:
+        row = count + 2
+        c_cell = ws_ss['C' + str(row)]
+        b_cell = ws_ss['B' + str(row)]
+        mrn_value = mrn[0].value
+        if mrn == None:
+            count += 1
+            pass
+        elif mrn != current_mrn:
+            completed_appointments['MesCoBraD'].append(
+                {mrn_value: [{c_cell.value: b_cell.value}]})
+            count += 1
+        elif mrn == current_mrn:
+            completed_appointments['MesCoBraD'][mrn_value].append(
+                {c_cell.value: b_cell.value})
+            count += 1
+        else:
+            count += 1
+            pass
+    print('mescobrad completed appointment mrn = ',
+          completed_appointments['MesCoBraD'])
     return
+# 'CBTI': 'MRN: {'MRN': '', 'completed_questionnaires': {'consent': '', 'cbs': '', 'cCbs': '', 'q-ess-a': '', 'ess-a(3m)': '', 'ess-a(1y)': '', 'q-isi-a': '', 'isi-a(3m)': '', 'isi-a(1y)': '', 'q-psqi': '', 'psqi(3m)': '', 'psqi(1y)': '', 'qnpi-q': '', 'q-cdr': ''}, 'arm': ''}}, 'MesCoBraD and CBTI Enrolled': {'MRN': []}, 'NIA_total': {'MRN': {}}, 'NIA- Not in study': {'MRN': {}}}
+
+# def adding_appiontments_to_statistics():
 
 
 NIA_patient_stats()
@@ -164,4 +191,5 @@ MesCoBraD_enrolled()
 CBTI_enrolled()
 pts_CBTI_and_MesCoBrad()
 nia_not_in_study()
+completed_appointments_mescobrad()
 wb.save('statistics.xlsx')
